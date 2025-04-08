@@ -1,4 +1,9 @@
 function handleCredentialResponse(response) {
+    if (!response || !response.credential) {
+        console.error('No credential received from Google Sign-In');
+        return;
+    }
+
     const userInfo = parseJwt(response.credential);
     const user = {
         id: userInfo.sub,
@@ -25,19 +30,18 @@ function handleCredentialResponse(response) {
 function parseJwt(token) {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
     return JSON.parse(jsonPayload);
 }
 
 function updateUserProfileUI(user) {
     const userProfile = document.getElementById('user-profile');
     const userName = document.getElementById('user-name');
-    const userPicture = document.getElementById('user-picture'); // This might be null
+    const userPicture = document.getElementById('user-picture');
     const gSignInButton = document.querySelector('.g_id_signin');
 
-    // Check if required elements exist
     if (!userProfile || !userName || !gSignInButton) {
         console.error('Required DOM elements for user profile UI are missing');
         return;
@@ -45,7 +49,6 @@ function updateUserProfileUI(user) {
 
     if (user) {
         userName.textContent = user.name || 'User';
-        // Only set userPicture.src if userPicture exists
         if (userPicture && user.picture) {
             userPicture.src = user.picture;
         }
@@ -70,4 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentUser) {
         updateUserProfileUI(currentUser);
     }
+
+    google.accounts.id.initialize({
+        client_id: '67099757392-80reaf2uk3ngknu4upfg9r3cikncdem9.apps.googleusercontent.com', // <-- Replace this!
+        callback: handleCredentialResponse
+    });
+
+    google.accounts.id.renderButton(
+        document.querySelector('.g_id_signin'),
+        { theme: 'outline', size: 'large' }
+    );
+
+    google.accounts.id.prompt(); // Optional: triggers One Tap if enabled
 });
