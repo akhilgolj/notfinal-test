@@ -411,10 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function placeOrder() {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (!currentUser?.id) {
+        //if (!currentUser?.id) {
             // showNotification('Please sign in to place an order.');
             // return;
-        }
+        //}
 
         const formElements = {
             name: document.getElementById('name'),
